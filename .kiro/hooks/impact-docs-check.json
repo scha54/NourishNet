@@ -1,0 +1,13 @@
+{
+  "name": "Impact Documentation Check",
+  "version": "1.0.0",
+  "description": "Checks that impact-model.md is up to date when impact calculation code changes.",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["backend/src/domain/impact*.ts", "backend/src/domain/impact-constants.ts"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The impact calculation code was just edited. Check that docs/impact-model.md still accurately documents: (1) The current values of MEALS_PER_KG and CARBON_PER_KG_FOOD_WASTE constants from backend/src/domain/impact-constants.ts. (2) The formulas: meals = weightKg * MEALS_PER_KG and carbonSaved = weightKg * CARBON_PER_KG_FOOD_WASTE. (3) The metric classification (measured vs calculated vs estimated) for each metric in the impact dashboard. (4) The source/citation for each constant. If docs/impact-model.md is missing or out of date, list the specific sections that need updating."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Backend Test Runner",
+  "version": "1.0.0",
+  "description": "Runs backend unit and domain tests when TypeScript backend files change.",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["backend/src/**/*.ts"]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "npm test -- --run --reporter=verbose 2>&1"
+  }
+}

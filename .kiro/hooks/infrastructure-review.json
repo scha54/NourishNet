@@ -1,0 +1,13 @@
+{
+  "name": "Infrastructure Review",
+  "version": "1.0.0",
+  "description": "Triggers a serverless architecture review when CDK infrastructure files change.",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["infra/**/*.ts"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the edited CDK infrastructure file using the serverless-architect checklist. Check: (1) IAM roles — each Lambda has its own role with least-privilege permissions, no wildcard actions or resources. (2) DynamoDB — all access patterns are covered by the existing GSI1/GSI2 indexes, no new GSIs without documented justification. (3) API Gateway — Cognito authorizer applied to all non-public routes, health endpoint is unauthenticated, CORS scoped to frontend origin. (4) Resource tagging — all resources tagged with Project=NourishNet and Environment=<env>. (5) Deletion protection — prod DynamoDB and Cognito have deletion protection enabled. Report any violations with file path, line number, and recommended fix."
+  }
+}

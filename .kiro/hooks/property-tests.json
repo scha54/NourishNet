@@ -1,0 +1,13 @@
+{
+  "name": "Property Test Runner",
+  "version": "1.0.0",
+  "description": "Runs property-based tests when domain logic files change.",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["backend/src/domain/**/*.ts"]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "npm test -- --run --reporter=verbose tests/properties/ 2>&1"
+  }
+}

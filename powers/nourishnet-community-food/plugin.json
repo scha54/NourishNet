@@ -1,0 +1,16 @@
+{
+  "name": "NourishNet Community Food",
+  "version": "0.1.0",
+  "description": "Packages NourishNet domain knowledge and MCP server capabilities for Kiro agents working on surplus food redistribution — covering donations, pickups, verified organizations, and social impact metrics.",
+  "keywords": ["nourishnet", "food", "donation", "redistribution", "impact"],
+  "skills": [
+    "skills/food-donation-domain/SKILL.md",
+    "skills/impact-metrics/SKILL.md",
+    "skills/serverless-patterns/SKILL.md"
+  ],
+  "mcpServers": {
+    "nourishnet-domain": {
+      "configPath": "mcp.json"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables (keep .env.example)
+.env*
+!.env.example
+
+# AWS CDK output
+cdk.out/
+
+# Test coverage
+coverage/
+
+# Source maps
+*.js.map
+
+# macOS
+.DS_Store
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Vite cache
+.vite/

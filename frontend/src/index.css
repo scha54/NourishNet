@@ -1,0 +1,39 @@
+/*
+ * NourishNet global stylesheet — Tailwind CSS v4 entry point.
+ *
+ * In v4 the three legacy `@tailwind base/components/utilities` directives are
+ * replaced by a single `@import "tailwindcss";`, which pulls in the base reset,
+ * component, and utility layers.
+ *
+ * `@config` points Tailwind at `tailwind.config.ts`, whose `content` glob covers
+ * all `frontend/src/**` files (Requirement 21.1). Design tokens are declared in
+ * the `@theme` block below using v4's CSS-custom-property syntax (Requirement 21.2).
+ */
+@import "tailwindcss";
+
+@config "../tailwind.config.ts";
+
+/*
+ * NourishNet design tokens.
+ *
+ * The `brand` palette is a green 50–900 scale reflecting the food / community
+ * mission. Each `--color-brand-*` custom property generates the matching
+ * `brand-*` utilities (e.g. `bg-brand-500`, `text-brand-700`). The semantic
+ * colours map to `success`, `warning`, and `danger` utilities.
+ */
+@theme {
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-300: #86efac;
+  --color-brand-400: #4ade80;
+  --color-brand-500: #22c55e;
+  --color-brand-600: #16a34a;
+  --color-brand-700: #15803d;
+  --color-brand-800: #166534;
+  --color-brand-900: #14532d;
+
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+}

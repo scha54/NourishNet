@@ -1,0 +1,75 @@
+{
+  "mcpServers": {
+    "nourishnet-domain": {
+      "command": "node",
+      "args": ["./server/index.js"],
+      "env": {
+        "NOURISHNET_DATA_SOURCE": "seed",
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "get_donation_by_id",
+        "list_donations_by_status",
+        "list_organizations",
+        "get_impact_summary"
+      ],
+      "tools": {
+        "get_donation_by_id": {
+          "description": "Fetch a single donation record (DONATION entity) by its UUID. Returns null when no donation matches the id.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "UUID of the donation to retrieve"
+              }
+            },
+            "required": ["id"],
+            "additionalProperties": false
+          }
+        },
+        "list_donations_by_status": {
+          "description": "List all donations filtered by their current lifecycle status. Returns an empty array when none match.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "available",
+                  "claimed",
+                  "in_transit",
+                  "completed",
+                  "cancelled",
+                  "expired"
+                ],
+                "description": "Donation lifecycle status to filter by"
+              }
+            },
+            "required": ["status"],
+            "additionalProperties": false
+          }
+        },
+        "list_organizations": {
+          "description": "List all verified community organizations (USER entities with role Organization). Takes no parameters.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        "get_impact_summary": {
+          "description": "Return aggregate impact metrics (meals, weight, carbon) across all completed redistribution events. Takes no parameters.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  }
+}
