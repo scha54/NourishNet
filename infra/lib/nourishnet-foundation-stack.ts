@@ -3,6 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
@@ -172,10 +173,26 @@ export class NourishNetFoundationStack extends cdk.Stack {
 
     // ── Task 5.5: Lambda Functions and Routes ────────────────────────────────
 
-    // Shared asset path — CDK resolves this at synthesis time; bundling happens at deploy.
-    // __dirname resolves to cdk.out/lib at runtime, so we need to go up 3 levels
-    // to reach the monorepo root, then into backend/src/handlers.
-    const handlersAssetPath = path.join(__dirname, '../../../backend/src/handlers');
+    // Handler entry points — these are TypeScript sources that import from the
+    // backend domain/ and repositories/ layers, so they must be bundled (not
+    // shipped as raw .ts). NodejsFunction uses esbuild to transpile each entry
+    // point and its imports into a single CommonJS artifact the nodejs20.x
+    // runtime can load.
+    //
+    // __dirname resolves to cdk.out/lib at runtime (the compiled JS location),
+    // so we go up 3 levels (lib → cdk.out → infra → repo root) to reach
+    // backend/src/handlers.
+    const handlersDir = path.join(__dirname, '../../../backend/src/handlers');
+    const healthHandlerEntry = path.join(handlersDir, 'health.ts');
+    const apiHandlerEntry = path.join(handlersDir, 'api-handler.ts');
+
+    // Shared esbuild bundling options. The AWS SDK v3 is available in the
+    // nodejs20.x runtime, so we keep it external to shrink the bundle.
+    const bundling = {
+      format: OutputFormat.CJS,
+      target: 'node20',
+      externalModules: ['@aws-sdk/*'],
+    };
 
     // ── health-handler Lambda ────────────────────────────────────────────────
 
@@ -207,11 +224,12 @@ export class NourishNetFoundationStack extends cdk.Stack {
 
     // Req 14.1: nodejs20.x runtime. Req 14.6: 10s timeout, 256 MB memory.
     // Req 14.3: TABLE_NAME and ENVIRONMENT as env vars.
-    const healthHandler = new lambda.Function(this, 'HealthHandler', {
+    const healthHandler = new NodejsFunction(this, 'HealthHandler', {
       functionName: `health-handler-${props.environment}`,
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'health.handler',
-      code: lambda.Code.fromAsset(handlersAssetPath),
+      entry: healthHandlerEntry,
+      handler: 'handler',
+      bundling,
       timeout: cdk.Duration.seconds(10),
       memorySize: 256,
       role: healthHandlerRole,
@@ -259,11 +277,12 @@ export class NourishNetFoundationStack extends cdk.Stack {
     });
 
     // Req 14.1, 14.3, 14.6 — same runtime/timeout/memory as health-handler.
-    const apiHandler = new lambda.Function(this, 'ApiHandler', {
+    const apiHandler = new NodejsFunction(this, 'ApiHandler', {
       functionName: `api-handler-${props.environment}`,
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'api-handler.handler',
-      code: lambda.Code.fromAsset(handlersAssetPath),
+      entry: apiHandlerEntry,
+      handler: 'handler',
+      bundling,
       timeout: cdk.Duration.seconds(10),
       memorySize: 256,
       role: apiHandlerRole,
@@ -387,18 +406,15 @@ export class NourishNetFoundationStack extends cdk.Stack {
     // ── Amplify Hosting App (Req 15.1 – 15.4) ────────────────────────────────
     // L1 CfnApp construct — @aws-cdk/aws-amplify-alpha is not in this project.
     // SPA rewrite: /* → /index.html (200) for client-side routing.
-    // HTTPS redirect: HTTP (301) → HTTPS.
+    //
+    // HTTPS enforcement (Req 15.4): Amplify Hosting serves all traffic over
+    // HTTPS and redirects HTTP → HTTPS automatically on its managed domains.
+    // A custom rule with an `http://` source is rejected by the Amplify API
+    // ("HTTP URLs cannot be used in custom rules"), so we rely on the
+    // platform's built-in HTTPS redirect rather than a hand-rolled rule.
     const amplifyApp = new amplify.CfnApp(this, 'AmplifyApp', {
       name: `NourishNet-${props.environment}`,
-      // SPA rewrite rule: map all paths to /index.html with 200 (Req 15.3)
-      // HTTPS redirect rule: redirect HTTP to HTTPS (Req 15.4)
       customRules: [
-        {
-          // Redirect HTTP → HTTPS (Req 15.4)
-          source: 'http://<*>',
-          target: 'https://<*>',
-          status: '301',
-        },
         {
           // SPA rewrite: all paths → /index.html with 200 (Req 15.3)
           source: '/<*>',
